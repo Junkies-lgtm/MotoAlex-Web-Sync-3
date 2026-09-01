@@ -771,10 +771,21 @@ p {
   padding: 20px 16px;
   display: flex;
   flex-direction: column;
-  gap: 16px;
+  gap: 14px;
   overflow-y: auto;
   z-index: 20;
   box-shadow: 2px 0 16px rgba(0, 0, 0, 0.3);
+}
+
+.planer-sidebar > * {
+  flex-shrink: 0;
+}
+
+.planer-sidebar > .waypoints-box {
+  flex: 1 1 auto;
+  min-height: 120px;
+  display: flex;
+  flex-direction: column;
 }
 
 /* Randloser Kartenbereich fuer die restliche Flaeche */
@@ -854,6 +865,15 @@ p {
     z-index: 10;
     box-shadow: none;
     box-sizing: border-box;
+  }
+
+  .planer-sidebar > .waypoints-box {
+    flex: none;
+    min-height: auto;
+  }
+
+  .waypoints-list {
+    max-height: 280px;
   }
 
   /* Auf mobilen Geraeten: Profil-Erklaerung nach unten verschieben */
@@ -1065,6 +1085,11 @@ p {
   display: flex;
   align-items: center;
   justify-content: space-between;
+  flex-shrink: 0;
+}
+
+.empty-waypoints-hint {
+  flex-shrink: 0;
 }
 
 .waypoints-list {
@@ -1072,8 +1097,28 @@ p {
   display: flex;
   flex-direction: column;
   gap: 6px;
-  max-height: 220px;
+  flex: 1 1 auto;
+  min-height: 0;
+  max-height: none;
   overflow-y: auto;
+  padding-right: 2px;
+}
+
+.waypoints-list::-webkit-scrollbar {
+  width: 5px;
+}
+
+.waypoints-list::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.waypoints-list::-webkit-scrollbar-thumb {
+  background: var(--surface-light);
+  border-radius: 4px;
+}
+
+.waypoints-list::-webkit-scrollbar-thumb:hover {
+  background: #555555;
 }
 
 /* --- Segment-Profil-Auswahl zwischen Wegpunkten --- */
