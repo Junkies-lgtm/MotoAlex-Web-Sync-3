@@ -79,7 +79,7 @@
   <script src="https://unpkg.com/maplibre-gl@4.7.1/dist/maplibre-gl.js" defer></script>
 
   <!-- Zentrales Stylesheet (Relative Pfadangabe) -->
-  <link rel="stylesheet" href="css/style.css">
+  <link rel="stylesheet" href="css/style.css?v=1.05">
 </head>
 <body class="page-planer">
 
@@ -93,8 +93,8 @@
       <nav class="main-nav" aria-label="Hauptnavigation">
         <a href="index.html" class="nav-link" id="nav-home">Start</a>
         <a href="planer.html" class="nav-link active" id="nav-planer">Routenplaner</a>
-        <a href="datenschutz.html" class="nav-link" id="nav-privacy">Datenschutz</a>
-        <a href="impressum.html" class="nav-link" id="nav-impressum">Impressum</a>
+        <a href="datenschutz.html" class="nav-link nav-link-legal" id="nav-privacy">Datenschutz</a>
+        <a href="impressum.html" class="nav-link nav-link-legal" id="nav-impressum">Impressum</a>
       </nav>
     </div>
   </header>
@@ -193,6 +193,13 @@
           GPX herunterladen &darr;
         </button>
       </div>
+
+      <!-- Footer-Links in der Seitenleiste -->
+      <footer class="planer-sidebar-footer" style="margin-top: auto; padding-top: 14px; border-top: 1px solid var(--surface-light); display: flex; justify-content: space-between; font-size: 11px; color: var(--text-dim);">
+        <a href="index.html" style="color: var(--text-dim);">Start</a>
+        <a href="datenschutz.html" style="color: var(--text-dim);">Datenschutz</a>
+        <a href="impressum.html" style="color: var(--text-dim);">Impressum</a>
+      </footer>
 
     </aside>
 

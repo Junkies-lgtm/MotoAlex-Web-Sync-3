@@ -81,14 +81,20 @@ html {
   color: var(--text);
   line-height: 1.6;
   -webkit-font-smoothing: antialiased;
+  overflow-x: hidden;
+  width: 100%;
 }
 
 body {
   min-height: 100vh;
+  min-height: 100dvh;
   display: flex;
   flex-direction: column;
   background-color: var(--bg);
   color: var(--text);
+  overflow-x: hidden;
+  width: 100%;
+  max-width: 100%;
 }
 
 a {
@@ -121,12 +127,15 @@ p {
   margin-right: auto;
   padding-left: 24px;
   padding-right: 24px;
+  box-sizing: border-box;
 }
 
 .main-content {
   flex: 1 0 auto;
   padding-top: 36px;
   padding-bottom: 64px;
+  width: 100%;
+  box-sizing: border-box;
 }
 
 /* --- Kopfzeile / Navigation (Immersive UI Nav-Bar) --- */
@@ -136,6 +145,9 @@ p {
   position: sticky;
   top: 0;
   z-index: 100;
+  width: 100%;
+  max-width: 100%;
+  box-sizing: border-box;
 }
 
 .header-inner {
@@ -143,6 +155,9 @@ p {
   align-items: center;
   justify-content: space-between;
   height: 60px;
+  width: 100%;
+  max-width: 100%;
+  box-sizing: border-box;
 }
 
 .brand-link {
@@ -154,6 +169,7 @@ p {
   font-size: 1.4rem;
   font-weight: 700;
   letter-spacing: -0.03em;
+  flex-shrink: 0;
 }
 
 .brand-link .brand-accent,
@@ -171,12 +187,15 @@ p {
   border-radius: var(--radius-sm);
   letter-spacing: 0.05em;
   text-transform: uppercase;
+  flex-shrink: 0;
 }
 
 .main-nav {
   display: flex;
   align-items: center;
-  gap: 24px;
+  gap: 20px;
+  flex-shrink: 1;
+  min-width: 0;
 }
 
 .nav-link {
@@ -187,6 +206,8 @@ p {
   border-radius: var(--radius-sm);
   transition: color 0.2s ease, background-color 0.2s ease;
   text-decoration: none !important;
+  white-space: nowrap;
+  flex-shrink: 0;
 }
 
 .nav-link:hover, .nav-link.active {
@@ -195,6 +216,89 @@ p {
 
 .nav-link.active {
   background-color: rgba(255, 85, 0, 0.08);
+}
+
+/* Responsive Header- & Navigation-Anpassungen */
+@media (max-width: 768px) {
+  .site-header {
+    overflow: hidden;
+  }
+
+  .site-header .nav-link-legal {
+    display: none !important;
+  }
+
+  .container {
+    padding-left: 16px;
+    padding-right: 16px;
+  }
+
+  .site-header .header-inner {
+    height: 54px;
+    gap: 8px;
+  }
+
+  .brand-link {
+    font-size: 1.2rem;
+    gap: 6px;
+  }
+
+  .main-nav {
+    gap: 8px;
+    overflow: visible;
+  }
+
+  .nav-link {
+    font-size: 13px;
+    padding: 5px 8px;
+  }
+}
+
+@media (max-width: 480px) {
+  .container {
+    padding-left: 12px;
+    padding-right: 12px;
+  }
+
+  .site-header .header-inner {
+    height: 50px;
+    gap: 6px;
+  }
+
+  .brand-link {
+    font-size: 1.1rem;
+    gap: 5px;
+  }
+
+  .brand-badge {
+    font-size: 0.65rem;
+    padding: 1px 5px;
+  }
+
+  .main-nav {
+    gap: 4px;
+  }
+
+  .nav-link {
+    font-size: 12px;
+    padding: 4px 6px;
+  }
+}
+
+@media (max-width: 360px) {
+  .brand-link {
+    font-size: 1rem;
+    gap: 4px;
+  }
+
+  .brand-badge {
+    display: none;
+  }
+
+  .nav-link {
+    font-size: 11.5px;
+    padding: 3px 5px;
+  }
 }
 
 /* --- Knoepfe & Formularelemente (Immersive UI Buttons) --- */
@@ -697,6 +801,8 @@ p {
     overflow-x: hidden;
     -webkit-overflow-scrolling: touch;
     display: block;
+    width: 100%;
+    max-width: 100vw;
   }
 
   .planer-app-container {
@@ -705,21 +811,26 @@ p {
     min-height: auto;
     overflow: visible;
     display: flex;
+    width: 100%;
+    max-width: 100%;
+    box-sizing: border-box;
   }
 
   .planer-map-area {
     order: 1;
     width: 100%;
-    height: 55vh;
-    height: 55dvh;
-    min-height: 320px;
-    max-height: 500px;
+    max-width: 100%;
+    height: 52vh;
+    height: 52dvh;
+    min-height: 280px;
+    max-height: 480px;
     position: relative;
     top: auto;
     left: auto;
     right: auto;
     bottom: auto;
     flex-shrink: 0;
+    box-sizing: border-box;
   }
 
   .planer-sidebar {
@@ -729,7 +840,7 @@ p {
     left: auto;
     right: auto;
     width: 100%;
-    min-width: 100%;
+    min-width: 0;
     max-width: 100%;
     max-height: none;
     height: auto;
@@ -737,11 +848,12 @@ p {
     border-right: none;
     border-top: 1px solid var(--surface-light);
     border-radius: 0;
-    padding: 16px;
+    padding: 16px 14px;
     gap: 14px;
     overflow: visible;
     z-index: 10;
     box-shadow: none;
+    box-sizing: border-box;
   }
 
   /* Auf mobilen Geraeten: Profil-Erklaerung nach unten verschieben */
@@ -1309,6 +1421,19 @@ p {
   box-shadow: 0 10px 30px rgba(0, 0, 0, 0.6);
   z-index: 15;
   pointer-events: none;
+  max-width: calc(100% - 24px);
+  box-sizing: border-box;
+}
+
+@media (max-width: 600px) {
+  .stats-bar-floating {
+    padding: 6px 16px;
+    gap: 16px;
+    bottom: 10px;
+  }
+  .stats-bar-floating .stat-val {
+    font-size: 1.15rem;
+  }
 }
 
 /* --- Karten-Container (Hell, isoliert, 12px abgerundet) --- */
