@@ -236,6 +236,25 @@ function renderRouteMap(waypoints, segmentModesOrMode) {
 }
 
 /**
+ * Baut die BRouter-Anfrage-URL zusammen
+ */
+function buildBRouterUrl(waypoints, profileId, params = null) {
+  const lonlatsParam = waypoints
+    .map(wp => `${wp.lng.toFixed(6)},${wp.lat.toFixed(6)}`)
+    .join('|');
+
+  let url = `${ROUTING_SERVICE_URL}?lonlats=${encodeURIComponent(lonlatsParam)}&profile=${encodeURIComponent(profileId)}&format=geojson`;
+
+  if (params) {
+    for (const [key, value] of Object.entries(params)) {
+      url += `&profile:${encodeURIComponent(key)}=${encodeURIComponent(value)}`;
+    }
+  }
+
+  return url;
+}
+
+/**
  * Ruft die Route von BRouter ab und zeichnet sie auf die Karte.
  * Unterstützt segmentweise Profile.
  */
