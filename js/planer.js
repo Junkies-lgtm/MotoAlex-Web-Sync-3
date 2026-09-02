@@ -10,14 +10,11 @@
 // Adresse des Kartenstils (MapTiler Streets v4)
 const MAP_STYLE_URL = 'https://api.maptiler.com/maps/streets-v4/style.json?key=dmKZNBELPxVIfl7kMaLH';
 
-// Basisadresse des BRouter-Routendienstes
-const ROUTING_SERVICE_URL = 'https://brouter.de/brouter';
+// Basisadresse des BRouter-Routendienstes (eigener Server)
+const ROUTING_SERVICE_URL = 'https://brouter.motoalex-navigation.de/brouter';
 
-// Eigene BRouter-Profil-ID
-const CUSTOM_PROFILE_ID = 'custom_1788263244304';
-
-// Standardprofil als Rückfallebene
-const FALLBACK_PROFILE_ID = 'car-fast';
+// BRouter-Profil-ID
+const PROFILE_ID = 'motorcycle';
 
 // Zuordnung der vier Routing-Modi zu BRouter-Profilparametern (profile:name=wert)
 const MODE_PARAMETERS = {
@@ -1334,28 +1331,14 @@ async function fetchSegmentRoute(wpA, wpB, modeKey) {
   const modeParams = MODE_PARAMETERS[modeKey] || MODE_PARAMETERS.kurvig;
   const segmentPoints = [wpA, wpB];
 
-  // 1. Versuch: Eigenes Profil
-  try {
-    const customUrl = buildBRouterUrl(segmentPoints, CUSTOM_PROFILE_ID, modeParams);
-    const response = await fetch(customUrl);
-    if (!response.ok) throw new Error(`HTTP ${response.status}`);
-    const data = await response.json();
-    if (data.features && data.features.length > 0) {
-      return { data, usedFallback: false };
-    }
-  } catch (err) {
-    console.warn(`Segmentberechnung (${modeKey}) mit eigenem Profil fehlgeschlagen, versuche Rueckfallprofil:`, err);
-  }
-
-  // 2. Versuch: Rueckfallprofil
-  const fallbackUrl = buildBRouterUrl(segmentPoints, FALLBACK_PROFILE_ID, null);
-  const fallbackResponse = await fetch(fallbackUrl);
-  if (!fallbackResponse.ok) throw new Error(`HTTP ${fallbackResponse.status}`);
-  const fallbackData = await fallbackResponse.json();
-  if (!fallbackData.features || fallbackData.features.length === 0) {
+  const url = buildBRouterUrl(segmentPoints, PROFILE_ID, modeParams);
+  const response = await fetch(url);
+  if (!response.ok) throw new Error(`HTTP ${response.status}`);
+  const data = await response.json();
+  if (!data.features || data.features.length === 0) {
     throw new Error('Keine fahrbare Route fuer diesen Abschnitt gefunden.');
   }
-  return { data: fallbackData, usedFallback: true };
+  return data;
 }
 
 /**
@@ -1378,32 +1361,16 @@ async function calculateRoute() {
     const allSameMode = state.segmentModes.every(m => m === firstMode);
 
     let combinedGeoJSON = null;
-    let anyUsedFallback = false;
 
     if (allSameMode) {
       // Schneller Gesamt-Abruf für alle Wegpunkte
       const modeParams = MODE_PARAMETERS[firstMode] || MODE_PARAMETERS.kurvig;
-      let geojson = null;
-
-      try {
-        const customUrl = buildBRouterUrl(state.waypoints, CUSTOM_PROFILE_ID, modeParams);
-        const response = await fetch(customUrl);
-        if (!response.ok) throw new Error(`HTTP ${response.status}`);
-        const data = await response.json();
-        if (!data.features || data.features.length === 0) throw new Error('Keine Route gefunden');
-        geojson = data;
-      } catch (customError) {
-        console.warn('Gesamtberechnung fehlgeschlagen, versuche Rueckfallprofil:', customError);
-        const fallbackUrl = buildBRouterUrl(state.waypoints, FALLBACK_PROFILE_ID, null);
-        const fallbackResponse = await fetch(fallbackUrl);
-        if (!fallbackResponse.ok) throw new Error(`HTTP ${fallbackResponse.status}`);
-        const fallbackData = await fallbackResponse.json();
-        if (!fallbackData.features || fallbackData.features.length === 0) throw new Error('Keine fahrbare Route gefunden');
-        geojson = fallbackData;
-        anyUsedFallback = true;
-      }
-
-      combinedGeoJSON = geojson;
+      const url = buildBRouterUrl(state.waypoints, PROFILE_ID, modeParams);
+      const response = await fetch(url);
+      if (!response.ok) throw new Error(`HTTP ${response.status}`);
+      const data = await response.json();
+      if (!data.features || data.features.length === 0) throw new Error('Keine Route gefunden');
+      combinedGeoJSON = data;
     } else {
       // Unterschiedliche Profile pro Segment: Segmente einzeln abrufen und zusammenfügen
       const segmentResults = [];
@@ -1412,9 +1379,8 @@ async function calculateRoute() {
         const wpB = state.waypoints[i + 1];
         const segMode = state.segmentModes[i] || state.selectedMode || 'kurvig';
 
-        const res = await fetchSegmentRoute(wpA, wpB, segMode);
-        segmentResults.push(res);
-        if (res.usedFallback) anyUsedFallback = true;
+        const segData = await fetchSegmentRoute(wpA, wpB, segMode);
+        segmentResults.push(segData);
       }
 
       // GeoJSON Geometrie und Eigenschaften kombinieren
@@ -1422,8 +1388,8 @@ async function calculateRoute() {
       let totalLengthMeters = 0;
       let totalTimeSeconds = 0;
 
-      segmentResults.forEach((seg, idx) => {
-        const feat = seg.data.features[0];
+      segmentResults.forEach((segData, idx) => {
+        const feat = segData.features[0];
         const coords = feat.geometry.coordinates;
         if (idx === 0) {
           allCoordinates.push(...coords);
@@ -1474,11 +1440,7 @@ async function calculateRoute() {
     // Zusammenfassung (Distanz und Zeit) anzeigen
     displayRouteSummary(state.currentRouteProperties);
 
-    if (anyUsedFallback) {
-      showStatus('Einige Abschnitte waren für das gewählte Profil zu komplex. Es wurde ein Ersatzprofil verwendet.', 'warning');
-    } else {
-      hideStatus();
-    }
+    hideStatus();
   } catch (err) {
     console.error('Fehler bei der Routenberechnung:', err);
     showStatus(`Routenberechnung fehlgeschlagen: ${err.message || 'Dienst nicht erreichbar'}.`, 'error');

@@ -6,14 +6,11 @@
 // Adresse des Kartenstils (MapTiler Streets v4)
 const MAP_STYLE_URL = 'https://api.maptiler.com/maps/streets-v4/style.json?key=dmKZNBELPxVIfl7kMaLH';
 
-// Basisadresse des BRouter-Routendienstes
-const ROUTING_SERVICE_URL = 'https://brouter.de/brouter';
+// Basisadresse des BRouter-Routendienstes (eigener Server)
+const ROUTING_SERVICE_URL = 'https://brouter.motoalex-navigation.de/brouter';
 
-// Eigene BRouter-Profil-ID
-const CUSTOM_PROFILE_ID = 'custom_1788263244304';
-
-// Standardprofil als Rückfallebene
-const FALLBACK_PROFILE_ID = 'car-fast';
+// BRouter-Profil-ID
+const PROFILE_ID = 'motorcycle';
 
 // Zuordnung der vier Routing-Modi zu BRouter-Profilparametern (profile:name=wert)
 const MODE_PARAMETERS = {
@@ -262,23 +259,12 @@ async function fetchAndDrawRoute(waypoints, segmentModesOrMode) {
       const selectedMode = segmentModes[0] || 'kurvig';
       const modeParams = MODE_PARAMETERS[selectedMode] || MODE_PARAMETERS.kurvig;
 
-      try {
-        const customUrl = buildBRouterUrl(waypoints, CUSTOM_PROFILE_ID, modeParams);
-        const res = await fetch(customUrl);
-        if (!res.ok) throw new Error(`HTTP ${res.status}`);
-        const data = await res.json();
-        if (data.features && data.features.length > 0) {
-          geojson = data;
-        }
-      } catch (customErr) {
-        console.warn('Routenberechnung mit eigenem Profil fehlgeschlagen, versuche Rueckfallprofil:', customErr);
-        const fallbackUrl = buildBRouterUrl(waypoints, FALLBACK_PROFILE_ID, null);
-        const fallbackRes = await fetch(fallbackUrl);
-        if (!fallbackRes.ok) throw new Error(`HTTP ${fallbackRes.status}`);
-        const fallbackData = await fallbackRes.json();
-        if (fallbackData.features && fallbackData.features.length > 0) {
-          geojson = fallbackData;
-        }
+      const url = buildBRouterUrl(waypoints, PROFILE_ID, modeParams);
+      const res = await fetch(url);
+      if (!res.ok) throw new Error(`HTTP ${res.status}`);
+      const data = await res.json();
+      if (data.features && data.features.length > 0) {
+        geojson = data;
       }
     } else {
       // Segmentweise Berechnung
@@ -292,33 +278,17 @@ async function fetchAndDrawRoute(waypoints, segmentModesOrMode) {
         const segMode = segmentModes[i] || 'kurvig';
         const modeParams = MODE_PARAMETERS[segMode] || MODE_PARAMETERS.kurvig;
 
-        let segData = null;
-        try {
-          const customUrl = buildBRouterUrl([wpA, wpB], CUSTOM_PROFILE_ID, modeParams);
-          const res = await fetch(customUrl);
-          if (res.ok) {
-            const d = await res.json();
-            if (d.features && d.features.length > 0) segData = d;
+        const url = buildBRouterUrl([wpA, wpB], PROFILE_ID, modeParams);
+        const res = await fetch(url);
+        if (res.ok) {
+          const d = await res.json();
+          if (d.features && d.features.length > 0) {
+            const feat = d.features[0];
+            segmentFeatures.push(feat);
+            const props = feat.properties || {};
+            totalLengthMeters += parseFloat(props['track-length'] || 0);
+            totalTimeSeconds += parseFloat(props['total-time'] || 0);
           }
-        } catch (e) {
-          console.warn(`Segment ${i + 1} fehlgeschlagen, nutze Rückfall:`, e);
-        }
-
-        if (!segData) {
-          const fallbackUrl = buildBRouterUrl([wpA, wpB], FALLBACK_PROFILE_ID, null);
-          const fallbackRes = await fetch(fallbackUrl);
-          if (fallbackRes.ok) {
-            const fd = await fallbackRes.json();
-            if (fd.features && fd.features.length > 0) segData = fd;
-          }
-        }
-
-        if (segData && segData.features && segData.features.length > 0) {
-          const feat = segData.features[0];
-          segmentFeatures.push(feat);
-          const props = feat.properties || {};
-          totalLengthMeters += parseFloat(props['track-length'] || 0);
-          totalTimeSeconds += parseFloat(props['total-time'] || 0);
         }
       }
 
