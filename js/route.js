@@ -3,8 +3,8 @@
  * Liest Wegpunkte & Modus aus der URL, rendert die Karte und zeigt App-Handoff
  */
 
-// Adresse des Kartenstils (MapTiler Streets v4)
-const MAP_STYLE_URL = 'https://api.maptiler.com/maps/streets-v4/style.json?key=dmKZNBELPxVIfl7kMaLH';
+// Adresse des Kartenstils (eigener Kachelserver)
+const MAP_STYLE_URL = 'https://tiles.motoalex-navigation.de/assets/style-bright.json';
 
 // Basisadresse des BRouter-Routendienstes (eigener Server)
 const ROUTING_SERVICE_URL = 'https://brouter.motoalex-navigation.de/brouter';
