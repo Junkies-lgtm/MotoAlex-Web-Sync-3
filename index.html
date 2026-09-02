@@ -140,7 +140,7 @@
   </script>
   
   <!-- Zentrales Stylesheet (Relative Pfadangabe fuer GitHub Pages) -->
-  <link rel="stylesheet" href="css/style.css?v=1.08">
+  <link rel="stylesheet" href="css/style.css?v=1.10">
 
   <!-- ==========================================================================
        SCREENSHOT-BILDER DATENSTRUKTUR (Hinzufuegen / Entfernen von Bildern)
@@ -246,25 +246,92 @@
             <strong>Bald im Play Store verfuegbar</strong>
           </div>
         </div>
+      </section>
 
-        <!-- Die drei Kernmerkmale im Hero -->
-        <div class="hero-features-grid" id="hero-features">
-          <div class="hero-feature-card">
-            <div class="hero-feature-icon">🗺️</div>
-            <div class="hero-feature-caption">Kurvenrouting</div>
-            <div class="hero-feature-subtext">Optimierte Streckenwahl nach Wunsch</div>
+      <!-- Kernmerkmale -->
+      <section class="features-section" id="features">
+        <h2 class="section-heading">Kernmerkmale</h2>
+        <p class="section-intro">
+          Entwickelt fuer Motorradfahrer, die Wert auf Fahrspass, Unabhaengigkeit und transparente Technik legen.
+        </p>
+
+        <div class="features-grid">
+          <div class="feature-item" id="feature-1">
+            <div class="feature-top">
+              <span class="feature-icon" aria-hidden="true">
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                  <path d="M4 19c3-1.5 5-7 8-7s5 7 8 5.5" />
+                  <path d="M4 12.5c3-1.5 5-7 8-7s5 7 8 5.5" opacity="0.4" />
+                </svg>
+              </span>
+              <div class="feature-num">01</div>
+            </div>
+            <h3>Kurvenoptimiertes Routing</h3>
+            <p>Wähle zwischen schnell, ausgewogen und extra kurvig, und das für jeden Abschnitt zwischen zwei Zwischenzielen einzeln. Die Berechnung meidet monotone Strecken und sucht gezielt nach fahrbaren Landstraßen.</p>
           </div>
 
-          <div class="hero-feature-card">
-            <div class="hero-feature-icon">📶</div>
-            <div class="hero-feature-caption">100% Offline</div>
-            <div class="hero-feature-subtext">Navigation auch ohne Mobilfunknetz</div>
+          <div class="feature-item" id="feature-2">
+            <div class="feature-top">
+              <span class="feature-icon" aria-hidden="true">
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <line x1="2" y1="2" x2="22" y2="22" />
+                  <path d="M8.5 16.5a5 5 0 0 1 7 0" />
+                  <path d="M4.9 12.9a10 10 0 0 1 5.6-2.8" />
+                  <path d="M14.5 10.7a10 10 0 0 1 4.6 2.2" />
+                  <path d="M1.4 8.8a15 15 0 0 1 7.2-2.7" />
+                  <path d="M17.8 7a15 15 0 0 1 4.8 1.8" />
+                  <circle cx="12" cy="20" r="1" fill="currentColor" />
+                </svg>
+              </span>
+              <div class="feature-num">02</div>
+            </div>
+            <h3>Vollständig offline</h3>
+            <p>Karten und Routingdaten liegen auf dem Handy. Navigation funktioniert im Funkloch genauso wie zu Hause, ohne Datenverbindung.</p>
           </div>
 
-          <div class="hero-feature-card">
-            <div class="hero-feature-icon">🧭</div>
-            <div class="hero-feature-caption">Klares Cockpit</div>
-            <div class="hero-feature-subtext">Fokus auf Fahrhinweise & Tempolimits</div>
+          <div class="feature-item" id="feature-3">
+            <div class="feature-top">
+              <span class="feature-icon" aria-hidden="true">
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <path d="M20.59 13.41l-7.17 7.17a2 2 0 0 1-2.83 0L2 12V2h10l8.59 8.59a2 2 0 0 1 0 2.82z" />
+                  <line x1="7" y1="7" x2="7.01" y2="7" stroke-width="2.5" />
+                </svg>
+              </span>
+              <div class="feature-num">03</div>
+            </div>
+            <h3>Kostenlos und ohne Konto</h3>
+            <p>Keine Registrierung, kein Abo, keine In-App-Käufe, keine Werbung. App installieren und losfahren.</p>
+          </div>
+
+          <div class="feature-item" id="feature-4">
+            <div class="feature-top">
+              <span class="feature-icon" aria-hidden="true">
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <rect x="2" y="3" width="12" height="9" rx="1.5" />
+                  <path d="M5 15h6" />
+                  <path d="M8 12v3" />
+                  <rect x="16" y="9" width="6" height="12" rx="1.5" />
+                  <path d="M11 7.5h4.5m0 0l-2-2m2 2l-2 2" />
+                </svg>
+              </span>
+              <div class="feature-num">04</div>
+            </div>
+            <h3>Planen am großen Bildschirm</h3>
+            <p>Route im Web-Planer bauen und per Link oder QR-Code aufs Handy schicken. GPX-Import und -Export folgen später.</p>
+          </div>
+
+          <div class="feature-item" id="feature-5">
+            <div class="feature-top">
+              <span class="feature-icon" aria-hidden="true">
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <rect x="3" y="11" width="18" height="11" rx="2" ry="2" />
+                  <path d="M7 11V7a5 5 0 0 1 10 0v4" />
+                </svg>
+              </span>
+              <div class="feature-num">05</div>
+            </div>
+            <h3>Keine Datensammlung</h3>
+            <p>Deine Routen und aufgezeichneten Fahrten bleiben auf deinem Handy. Kein Konto, keine Übertragung an einen Server, kein Bewegungsprofil.</p>
           </div>
         </div>
       </section>
@@ -312,37 +379,64 @@
         </div>
       </section>
 
-      <!-- Merkmale -->
-      <section class="features-section" id="features">
-        <h2 class="section-heading">Kernmerkmale</h2>
+      <!-- Stand der Entwicklung -->
+      <section class="status-section" id="status">
+        <h2 class="section-heading">Stand der Entwicklung</h2>
         <p class="section-intro">
-          Entwickelt fuer Motorradfahrer, die Wert auf Fahrspass, Unabhaengigkeit und transparente Technik legen.
+          MotoAlex entsteht als Feierabendprojekt, hier siehst du, wo es gerade steht.
         </p>
 
-        <div class="features-grid">
-          <div class="feature-item" id="feature-1">
-            <div class="feature-num">01</div>
-            <h3>Kurvenoptimiertes Routing</h3>
-            <p>Waehle zwischen schnell, ausgewogen oder extra kurvig. Die Berechnung meidet automatisch monotone Abschnitte und sucht gezielt nach fahrbaren Strecken.</p>
+        <div class="status-grid">
+          
+          <!-- Fertig -->
+          <div class="status-column status-done" id="status-col-done">
+            <h3>Fertig</h3>
+            <ul class="status-list">
+              <li><span class="status-bullet" aria-hidden="true">&bull;</span><span>Kurvige Routen statt schnellster Weg</span></li>
+              <li><span class="status-bullet" aria-hidden="true">&bull;</span><span>Navigation mit Abbiegehinweisen</span></li>
+              <li><span class="status-bullet" aria-hidden="true">&bull;</span><span>Vollständig offline, ohne Internet und ohne Konto</span></li>
+              <li><span class="status-bullet" aria-hidden="true">&bull;</span><span>Automatische Neuberechnung bei Abweichung</span></li>
+              <li><span class="status-bullet" aria-hidden="true">&bull;</span><span>Sperrungen umfahren auf Knopfdruck</span></li>
+              <li><span class="status-bullet" aria-hidden="true">&bull;</span><span>Routenplanung mit Zwischenzielen und gespeicherten Routen</span></li>
+              <li><span class="status-bullet" aria-hidden="true">&bull;</span><span>Blitzerwarnung und Fahrtaufzeichnung</span></li>
+              <li><span class="status-bullet" aria-hidden="true">&bull;</span><span>Routenplaner auf der Webseite mit Teilen per Link und QR-Code</span></li>
+            </ul>
           </div>
 
-          <div class="feature-item" id="feature-2">
-            <div class="feature-num">02</div>
-            <h3>Vollstaendig Offline</h3>
-            <p>Karten und Routingdaten werden vorab heruntergeladen. Du erreichst deine Ziele auch in entlegenen Bergregionen ohne Mobilfunkempfang.</p>
+          <!-- In Arbeit -->
+          <div class="status-column status-wip" id="status-col-wip">
+            <h3>In Arbeit</h3>
+            <ul class="status-list">
+              <li><span class="status-bullet" aria-hidden="true">&bull;</span><span>Eigener Routenserver für die Webseite</span></li>
+              <li><span class="status-bullet" aria-hidden="true">&bull;</span><span>Kartenverwaltung mit Warteschlange und Empfehlungen zum Standort</span></li>
+              <li><span class="status-bullet" aria-hidden="true">&bull;</span><span>Kartenabdeckung über Deutschland hinaus</span></li>
+            </ul>
           </div>
 
-          <div class="feature-item" id="feature-3">
-            <div class="feature-num">03</div>
-            <h3>Dauerhaft kostenlos</h3>
-            <p>Kein Monatsabo, keine In-App-Kaeufe, keine Werbeeinblendungen. Alle Kernfunktionen stehen uneingeschraenkt zur Verfuegung.</p>
+          <!-- Geplant -->
+          <div class="status-column status-planned" id="status-col-planned">
+            <h3>Geplant</h3>
+            <ul class="status-list">
+              <li><span class="status-bullet" aria-hidden="true">&bull;</span><span>Veröffentlichung im Play Store</span></li>
+              <li><span class="status-bullet" aria-hidden="true">&bull;</span><span>Testbetrieb mit mehreren Fahrern</span></li>
+              <li><span class="status-bullet" aria-hidden="true">&bull;</span><span>Rundkurse ab einem Startpunkt</span></li>
+              <li><span class="status-bullet" aria-hidden="true">&bull;</span><span>Sprachansage</span></li>
+              <li><span class="status-bullet" aria-hidden="true">&bull;</span><span>GPX-Dateien importieren und exportieren</span></li>
+              <li><span class="status-bullet" aria-hidden="true">&bull;</span><span>Adresssuche auf der Webseite</span></li>
+            </ul>
           </div>
 
-          <div class="feature-item" id="feature-4">
-            <div class="feature-num">04</div>
-            <h3>GPX-Export & Import</h3>
-            <p>Plane deine Touren im Web-Planer oder uebernimm Tracks aus anderen Quellen direkt als GPX-Datei auf dein Smartphone.</p>
-          </div>
+        </div>
+
+        <!-- Abgesetzter Kasten: Tester gesucht -->
+        <div class="tester-box" id="tester-box">
+          <h3>Tester gesucht</h3>
+          <p>
+            Die App ist noch nicht im Play Store. Davor steht eine Testphase mit echten Fahrern. Wer mitmachen und MotoAlex vorab nutzen möchte, schreibt mir einfach.
+          </p>
+          <a href="#tester-box" class="btn btn-primary" id="btn-become-tester">
+            Tester werden
+          </a>
         </div>
       </section>
 
@@ -353,28 +447,43 @@
 
         <div class="faq-list">
           <div class="faq-item" id="faq-1">
-            <h3>Ist MotoAlex wirklich komplett kostenlos?</h3>
-            <p>Ja. MotoAlex wird als freies Projekt bereitgestellt. Es gibt keine versteckten Kosten, keine Testzeitraeume und keine kostenpflichtigen Premium-Modelle.</p>
+            <h3>Ist MotoAlex kostenlos?</h3>
+            <p>Ja. Kein Abo, keine In-App-Käufe, keine Werbung und kein Testzeitraum, der irgendwann abläuft. Es gibt auch keine Registrierung, du brauchst kein Konto.</p>
           </div>
 
           <div class="faq-item" id="faq-2">
-            <h3>Benoetige ich unterwegs eine Internetverbindung?</h3>
-            <p>Nein. Nach dem einmaligen Herunterladen der gewuenschten Regionalkarten in der App funktioniert die Navigation vollstaendig ohne mobile Datenverbindung.</p>
+            <h3>Wo bekomme ich die App?</h3>
+            <p>Die App ist noch nicht im Play Store. Davor steht eine Testphase mit echten Fahrern. Wer mitfahren und MotoAlex vorab nutzen möchte, meldet sich über den Knopf "Tester werden".</p>
           </div>
 
           <div class="faq-item" id="faq-3">
-            <h3>Wie unterscheidet sich der Web-Routenplaner von der App?</h3>
-            <p>Der Web-Routenplaner dient der schnellen Vorabplanung am Computer oder Tablet. Berechnete Strecken koennen per GPX-Datei direkt in die MotoAlex-App oder andere Navigationsgeraete uebertragen werden.</p>
+            <h3>Benötige ich unterwegs eine Internetverbindung?</h3>
+            <p>Nein. Nach dem einmaligen Herunterladen der gewünschten Karten funktioniert die Navigation vollständig ohne mobile Daten, auch im Funkloch.</p>
           </div>
 
           <div class="faq-item" id="faq-4">
-            <h3>Welches Kartenmaterial wird verwendet?</h3>
-            <p>MotoAlex nutzt die freien Geodaten des OpenStreetMap-Projekts, die weltweit von Millionen Nutzern aktuell gehalten werden.</p>
+            <h3>Wie unterscheidet sich der Web-Routenplaner von der App?</h3>
+            <p>Der Planer ist für die Vorbereitung am großen Bildschirm gedacht. Die fertige Route schickst du per Link oder QR-Code aufs Handy und öffnest sie dort direkt in der App. GPX-Export folgt später.</p>
           </div>
 
           <div class="faq-item" id="faq-5">
+            <h3>Welches Kartenmaterial wird verwendet?</h3>
+            <p>Die freien Geodaten des OpenStreetMap-Projekts, die weltweit von Millionen Menschen aktuell gehalten werden.</p>
+          </div>
+
+          <div class="faq-item" id="faq-6">
+            <h3>Welche Gebiete sind verfügbar?</h3>
+            <p>Zurzeit Deutschland. Weitere Länder sind in Arbeit.</p>
+          </div>
+
+          <div class="faq-item" id="faq-7">
             <h3>Werden meine Fahrdaten aufgezeichnet?</h3>
-            <p>Nein. Deine Standortdaten bleiben ausschliesslich auf deinem Endgeraet. Es findet keine Uebertragung von Bewegungsprofilen an externe Server statt.</p>
+            <p>Nein. Aufgezeichnete Fahrten und gespeicherte Routen bleiben auf deinem Gerät. Die App überträgt keine Standortdaten an einen Server und legt kein Bewegungsprofil an.</p>
+          </div>
+
+          <div class="faq-item" id="faq-8">
+            <h3>Was passiert mit meinen Daten auf dieser Webseite?</h3>
+            <p>Beim Berechnen einer Route im Planer werden die gesetzten Koordinaten an den Routendienst übertragen, sonst nichts. Es gibt keine Cookies, kein Tracking und keine Analysedienste. Einzelheiten stehen in der <a href="datenschutz.html" style="color: var(--accent); text-decoration: underline;">Datenschutzerklärung</a>.</p>
           </div>
         </div>
       </section>
@@ -565,6 +674,19 @@
             prevSlide(); // Nach rechts gewischt -> zurueck
           }
         }
+      }
+
+      // 6. E-Mail-Adresse fuer "Tester werden"-Knopf dynamisch zusammensetzen (Spamschutz)
+      const testerBtn = document.getElementById('btn-become-tester');
+      if (testerBtn) {
+        const user = 'webmaster';
+        const domain = 'motoalex-navigation.de';
+        const subject = encodeURIComponent('MotoAlex Tester');
+        const mailtoUrl = 'mailto:' + user + '@' + domain + '?subject=' + subject;
+        testerBtn.setAttribute('href', mailtoUrl);
+        testerBtn.addEventListener('click', function(e) {
+          window.location.href = mailtoUrl;
+        });
       }
     });
   </script>

@@ -41,7 +41,7 @@
   <link rel="apple-touch-icon" href="bilder/app-icon.png">
   
   <!-- Zentrales Stylesheet (Relative Pfadangabe) -->
-  <link rel="stylesheet" href="css/style.css?v=1.08">
+  <link rel="stylesheet" href="css/style.css?v=1.09">
 </head>
 <body>
 
@@ -74,15 +74,22 @@
           <p>Verantwortlich fuer die Datenverarbeitung auf dieser Webseite:</p>
           <div class="placeholder-box">
             <strong>MotoAlex Navigation</strong><br>
-            Alexander Kuntze<br>
-            Am Schützenwäldchen 164<br>
-            15537 Erkner<br>
+            [NAME EINSETZEN]<br>
+            [STRASSE EINSETZEN]<br>
+            [PLZ UND ORT EINSETZEN]<br>
             E-Mail: <a href="mailto:webmaster@motoalex-navigation.de" style="color: var(--accent);">webmaster@motoalex-navigation.de</a>
           </div>
         </section>
 
         <section class="prose-block">
-          <h2>2. Keine Cookies & kein Tracking</h2>
+          <h2>2. Hosting über GitHub Pages</h2>
+          <p>
+            Diese Webseite wird über GitHub Pages ausgeliefert, einen Dienst der GitHub Inc. mit Sitz in den USA. Beim Aufruf der Seite überträgt der Browser technisch bedingt die IP-Adresse an GitHub. Rechtsgrundlage ist das berechtigte Interesse an einer sicheren und zuverlässigen Bereitstellung nach Artikel 6 Absatz 1 Buchstabe f DSGVO. Die Übermittlung in die USA erfolgt auf Grundlage der Standardvertragsklauseln.
+          </p>
+        </section>
+
+        <section class="prose-block">
+          <h2>3. Keine Cookies & kein Tracking</h2>
           <p>
             Diese Webseite verwendet <strong>keine Cookies</strong>, keine Web-Beacons, keine Werbenetzwerke und keine externen Analysedienste (wie Google Analytics, Matomo etc.).
             Es werden keine personenbezogenen Nutzungsprofile erstellt.
@@ -90,7 +97,7 @@
         </section>
 
         <section class="prose-block">
-          <h2>3. Bereitstellung der Kartendarstellung (MapTiler / OpenStreetMap)</h2>
+          <h2>4. Bereitstellung der Kartendarstellung (MapTiler / OpenStreetMap)</h2>
           <p>
             Auf der Seite des Routenplaners wird zur Darstellung von Landkarten ein externer Kartendienst eingebunden:
           </p>
@@ -105,24 +112,33 @@
         </section>
 
         <section class="prose-block">
-          <h2>4. Routenberechnung (BRouter-Dienst)</h2>
+          <h2>5. Routenberechnung (BRouter-Dienst)</h2>
           <p>
-            Wenn du auf der Seite <em>Routenplaner</em> Wegpunkte setzt und eine Route berechnen laesst, werden die ausgewaehlten <strong>geografischen Koordinaten (Laengen- und Breitengrade)</strong> an den oeffentlichen Routendienst <strong>brouter.de</strong> uebertragen.
+            Die Übertragung beruht auf dem berechtigten Interesse an der Erbringung der angefragten Berechnung nach Artikel 6 Absatz 1 Buchstabe f DSGVO. Wenn du auf der Seite <em>Routenplaner</em> Wegpunkte setzt und eine Route berechnen laesst, werden die ausgewaehlten <strong>geografischen Koordinaten (Laengen- und Breitengrade)</strong> an den oeffentlichen Routendienst <strong>brouter.de</strong> uebertragen.
           </p>
           <p>
             Diese Uebertragung ist zwingend erforderlich, um den Strassenverlauf, Kurvenkriterien und Abstaende serverseitig zu berechnen und an deinen Browser zurueckzuliefern. Es werden keine darueber hinausgehenden Nutzerdaten oder Identifikatoren uebermittelt.
           </p>
+
+          <!-- NOCH NICHT AKTIV (Zukünftiger eigener Routenserver):
+          <p>
+            Die Berechnung erfolgt auf einem eigenen Server, der vom Anbieter dieser Seite in einem Rechenzentrum in Deutschland betrieben wird. Übertragen werden ausschließlich die gesetzten Koordinaten. Es werden keine IP-Adressen dauerhaft gespeichert und keine Nutzerkennungen vergeben. Berechnete Routen werden für bis zu 14 Tage zwischengespeichert, um wiederholte Abrufe geteilter Links zu beschleunigen.
+          </p>
+          -->
         </section>
 
         <section class="prose-block">
-          <h2>5. GPX-Export & lokale Datenverarbeitung</h2>
+          <h2>6. Teilen von Routen und lokale Verarbeitung</h2>
           <p>
-            Der Export und Download von GPX-Dateien erfolgt vollstaendig <strong>lokal in deinem Webbrowser</strong> ueber clientseitige JavaScript-Funktionen. Die erstelle GPX-Datei verbleibt ausschliesslich auf deinem Geraet.
+            Wird eine Route über den Teilen-Knopf als Link oder QR-Code weitergegeben, sind die Wegpunkte vollständig in der Adresse des Links enthalten. Es findet keine Speicherung auf einem Server statt und es wird keine Kennung vergeben. Wer den Link besitzt, kann die Route sehen.
+          </p>
+          <p>
+            Sofern künftig GPX-Dateien erzeugt werden, geschieht dies ausschließlich im Browser, die Datei verbleibt auf dem Gerät.
           </p>
         </section>
 
         <section class="prose-block">
-          <h2>6. Deine Rechte</h2>
+          <h2>7. Deine Rechte</h2>
           <p>
             Du hast gemaess der DSGVO das Recht auf Auskunft, Berichtigung, Loeschung und Einschraenkung der Verarbeitung deiner personenbezogenen Daten, soweit solche ueberhaupt verarbeitet werden. Bitte wende dich hierzu an den oben genannten Verantwortlichen.
           </p>
