@@ -10,6 +10,10 @@
 // Adresse des Kartenstils (eigener Kachelserver)
 const MAP_STYLE_URL = 'https://tiles.motoalex-navigation.de/assets/style-bright.json';
 
+// Begrenzung des Kartenausschnitts und Zoomlevels (aktuell Deutschland)
+const MAP_MIN_ZOOM = 5;
+const MAP_MAX_BOUNDS = [[5.5, 47.0], [15.5, 55.5]];
+
 // Basisadresse des BRouter-Routendienstes (eigener Server)
 const ROUTING_SERVICE_URL = 'https://brouter.motoalex-navigation.de/brouter';
 
@@ -276,6 +280,8 @@ function initMap() {
       style: MAP_STYLE_URL,
       center: [10.4515, 51.1657], // Geografische Mitte Deutschlands
       zoom: 6,
+      minZoom: MAP_MIN_ZOOM,
+      maxBounds: MAP_MAX_BOUNDS,
       attributionControl: true
     });
 
