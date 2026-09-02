@@ -871,17 +871,18 @@ p {
 
 /* Feste linke Seitenleiste auf breiten Bildschirmen (Desktop & Tablet Querformat) */
 .planer-sidebar {
-  width: 350px;
-  min-width: 330px;
-  max-width: 380px;
+  width: 360px;
+  min-width: 340px;
+  max-width: 400px;
   height: 100%;
   background-color: var(--surface);
   border-right: 1px solid var(--surface-light);
-  padding: 20px 18px;
+  padding: 16px 14px;
   display: flex;
   flex-direction: column;
-  gap: 14px;
+  gap: 12px;
   overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
   z-index: 20;
   box-shadow: 2px 0 16px rgba(0, 0, 0, 0.3);
 }
@@ -892,9 +893,15 @@ p {
 
 .planer-sidebar > .waypoints-box {
   flex: 1 1 auto;
-  min-height: 140px;
+  min-height: 280px;
   display: flex;
   flex-direction: column;
+}
+
+.planer-action-buttons {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
 }
 
 /* Randloser Kartenbereich fuer die restliche Flaeche */
@@ -1000,6 +1007,63 @@ p {
 
   .waypoints-list {
     max-height: 480px;
+  }
+}
+
+/* Spezifische Optimierung für Tablets im Querformat (z. B. iPad) & Bildschirme mit kompakter Höhe */
+@media (min-width: 881px) and (max-height: 900px) {
+  .planer-sidebar {
+    padding: 12px 14px;
+    gap: 10px;
+    width: 360px;
+    min-width: 340px;
+  }
+
+  .planer-sidebar > .waypoints-box {
+    min-height: 280px;
+    flex: 1 1 auto;
+  }
+
+  .waypoints-list {
+    min-height: 220px;
+    max-height: 380px;
+  }
+
+  .profile-info-box {
+    padding: 6px 10px;
+    gap: 2px;
+  }
+
+  .profile-info-desc {
+    font-size: 11px;
+    line-height: 1.35;
+  }
+
+  .control-group {
+    gap: 4px;
+  }
+
+  .search-box-container {
+    margin-bottom: 0;
+  }
+
+  .route-summary-box {
+    padding: 12px;
+    gap: 8px;
+  }
+
+  .summary-stats {
+    gap: 8px;
+  }
+
+  .stat-val {
+    font-size: 1.25rem;
+  }
+
+  .planer-action-buttons .btn {
+    min-height: 38px;
+    padding: 8px 14px;
+    font-size: 13px;
   }
 }
 
@@ -1218,10 +1282,11 @@ p {
   flex-direction: column;
   gap: 6px;
   flex: 1 1 auto;
-  min-height: 0;
+  min-height: 180px;
   max-height: none;
   overflow-y: auto;
-  padding-right: 2px;
+  -webkit-overflow-scrolling: touch;
+  padding-right: 4px;
 }
 
 .waypoints-list::-webkit-scrollbar {
