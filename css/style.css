@@ -760,15 +760,15 @@ p {
   width: 100%;
 }
 
-/* Feste linke Seitenleiste auf breiten Bildschirmen (320px) */
+/* Feste linke Seitenleiste auf breiten Bildschirmen (Desktop & Tablet Querformat) */
 .planer-sidebar {
-  width: 320px;
-  min-width: 320px;
-  max-width: 320px;
+  width: 350px;
+  min-width: 330px;
+  max-width: 380px;
   height: 100%;
   background-color: var(--surface);
   border-right: 1px solid var(--surface-light);
-  padding: 20px 16px;
+  padding: 20px 18px;
   display: flex;
   flex-direction: column;
   gap: 14px;
@@ -783,7 +783,7 @@ p {
 
 .planer-sidebar > .waypoints-box {
   flex: 1 1 auto;
-  min-height: 120px;
+  min-height: 140px;
   display: flex;
   flex-direction: column;
 }
@@ -831,10 +831,10 @@ p {
     order: 1;
     width: 100%;
     max-width: 100%;
-    height: 52vh;
-    height: 52dvh;
+    height: 48vh;
+    height: 48dvh;
     min-height: 280px;
-    max-height: 480px;
+    max-height: 460px;
     position: relative;
     top: auto;
     left: auto;
@@ -873,13 +873,24 @@ p {
   }
 
   .waypoints-list {
-    max-height: 280px;
+    max-height: 350px;
   }
 
   /* Auf mobilen Geraeten: Profil-Erklaerung nach unten verschieben */
   .profile-info-box {
     order: 10;
     margin-top: 4px;
+  }
+}
+
+/* Spezifische Tablet-Optimierung (Portrait & Zwischengroessen: 600px bis 880px) */
+@media (min-width: 600px) and (max-width: 880px) {
+  .planer-sidebar {
+    padding: 22px 20px;
+  }
+
+  .waypoints-list {
+    max-height: 480px;
   }
 }
 
