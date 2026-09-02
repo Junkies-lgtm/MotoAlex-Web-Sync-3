@@ -219,6 +219,12 @@
     <!-- Rechter Bereich: Karte (Randlos, volle Resthoehe & Breite) -->
     <section class="planer-map-area" aria-label="Interaktive Karte">
       
+      <!-- Dezent eingeblendeter Fehlerhinweis bei Karten-/Kachel-Ladefehlern -->
+      <div id="map-error-notice" class="map-error-notice" role="alert" aria-live="assertive" style="display: none;">
+        <span class="map-error-icon" aria-hidden="true">⚠️</span>
+        <span class="map-error-text">Die Karte konnte nicht vollständig geladen werden. Prüfe deine Internetverbindung und lade die Seite neu.</span>
+      </div>
+
       <!-- Beta-Hinweis Popup ueber der Karte -->
       <div id="beta-info-popup" class="beta-info-popup" role="region" aria-label="Beta-Hinweis">
         <div class="beta-info-content">

@@ -209,7 +209,8 @@ document.addEventListener('DOMContentLoaded', () => {
     shareQrContainer: document.getElementById('share-qrcode'),
     addressSearchInput: document.getElementById('address-search-input'),
     btnClearSearch: document.getElementById('btn-clear-search'),
-    searchResultsDropdown: document.getElementById('search-results-dropdown')
+    searchResultsDropdown: document.getElementById('search-results-dropdown'),
+    mapErrorNotice: document.getElementById('map-error-notice')
   };
 
   initMap();
@@ -220,6 +221,26 @@ document.addEventListener('DOMContentLoaded', () => {
   updateProfileExplanation(state.selectedMode || 'kurvig');
   checkUrlParamsOnLoad();
 });
+
+/**
+ * Blendet den dezenten Fehlerhinweis ueber der Karte ein
+ */
+function showMapErrorBanner() {
+  const el = domElements.mapErrorNotice || document.getElementById('map-error-notice');
+  if (el) {
+    el.style.display = 'flex';
+  }
+}
+
+/**
+ * Blendet den dezenten Fehlerhinweis wieder aus
+ */
+function hideMapErrorBanner() {
+  const el = domElements.mapErrorNotice || document.getElementById('map-error-notice');
+  if (el) {
+    el.style.display = 'none';
+  }
+}
 
 /**
  * Zeigt einen deutlich sichtbaren Hinweis im Kartenbereich an
@@ -305,9 +326,15 @@ function initMap() {
       }, 100);
     });
 
-    // Fehlerbehandlung beim Laden des MapTiler-Stils
+    // Fehlerbehandlung für die Karte: Listener für das error-Ereignis
     map.on('error', (e) => {
-      console.error('Kartenfehler:', e);
+      const errorText = (e && e.error && (e.error.message || e.error.statusText)) || (e && e.message) || (e && e.error) || 'Unbekannter Fehler';
+      const errorUrl = (e && (e.url || (e.error && (e.error.url || e.error.statusText)) || (e.tile && (e.tile.url || (e.tile.canonical && e.tile.canonical.url))) || (e.source && e.source.url))) || (e && e.resource && e.resource.url) || 'Unbekannte Adresse';
+
+      console.error(`Kartenfehler: ${errorText} | Adresse: ${errorUrl}`, e);
+
+      showMapErrorBanner();
+
       if (e && e.error && (e.error.status === 401 || e.error.status === 403 || e.error.status === 404)) {
         showMapNotice(
           'Fehler beim Laden des Kartenstils',
@@ -315,6 +342,23 @@ function initMap() {
           true
         );
       }
+    });
+
+    // Sobald Kacheln oder Kartendaten wieder erfolgreich geladen werden, Hinweis ausblenden
+    map.on('data', (e) => {
+      if (e.dataType === 'source' || e.dataType === 'tile' || e.dataType === 'style') {
+        hideMapErrorBanner();
+      }
+    });
+
+    map.on('sourcedata', (e) => {
+      if (e.isSourceLoaded) {
+        hideMapErrorBanner();
+      }
+    });
+
+    map.on('idle', () => {
+      hideMapErrorBanner();
     });
   } catch (err) {
     console.error('Fehler bei der Karteninitialisierung:', err);
