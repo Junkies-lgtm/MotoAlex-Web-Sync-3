@@ -10,9 +10,12 @@
 // Adresse des Kartenstils (eigener Kachelserver)
 const MAP_STYLE_URL = 'https://tiles.motoalex-navigation.de/assets/style-bright.json';
 
-// Begrenzung des Kartenausschnitts und Zoomlevels (aktuell Deutschland)
-const MAP_MIN_ZOOM = 5;
-const MAP_MAX_BOUNDS = [[5.5, 47.0], [15.5, 55.5]];
+// Begrenzung des Kartenausschnitts und Zoomlevels (Mitteleuropa / Nachbarländer)
+const MAP_MIN_ZOOM = 3;
+const MAP_MAX_BOUNDS = [[-5.0, 40.0], [25.0, 62.0]];
+
+// Pfad zur vereinfachten Europa-Hintergrundebene
+const EUROPA_GEOJSON_URL = 'data/europa.geojson';
 
 // Basisadresse des BRouter-Routendienstes (eigener Server)
 const ROUTING_SERVICE_URL = 'https://brouter.motoalex-navigation.de/brouter';
@@ -310,8 +313,9 @@ function initMap() {
       closeContextMenu();
     });
 
-    // Nach dem Laden des Kartenstils Routing-Ebenen vorbereiten
+    // Nach dem Laden des Kartenstils Hintergrund- und Routing-Ebenen vorbereiten
     map.on('load', () => {
+      setupEuropaBackgroundLayer();
       setupRouteLayers();
       map.resize();
     });
@@ -1248,6 +1252,56 @@ function clearAllWaypointsAndRoute() {
 // ==========================================================================
 // 6. ROUTENBERECHNUNG (BRouter API)
 // ==========================================================================
+
+/**
+ * Richtet die schemenhafte Europa-Hintergrundebene als Fallback unter allen Vektorkacheln ein
+ */
+function setupEuropaBackgroundLayer() {
+  if (map.getSource('europa-source')) return;
+
+  // Hintergrundfarbe der Karte (Meer/Wasser) auf einen hellen Blauton setzen
+  if (map.getLayer('background')) {
+    map.setPaintProperty('background', 'background-color', '#c8dcf0');
+  }
+
+  // Zusätzliche GeoJSON-Quelle mit vereinfachten europäischen Länderflächen
+  map.addSource('europa-source', {
+    type: 'geojson',
+    data: EUROPA_GEOJSON_URL
+  });
+
+  // Erste vorhandene Ebene nach 'background' ermitteln, um die Füllebene direkt darüber einzufügen
+  const layers = map.getStyle().layers || [];
+  let firstLayerId = null;
+  for (let i = 0; i < layers.length; i++) {
+    if (layers[i].type !== 'background') {
+      firstLayerId = layers[i].id;
+      break;
+    }
+  }
+
+  // Füllebene: Gedecktes Beige passend zum Hintergrund (#ece4da), mit feiner hellerer Grenzlinie
+  map.addLayer({
+    id: 'europa-land-fill',
+    type: 'fill',
+    source: 'europa-source',
+    paint: {
+      'fill-color': '#ece4da',
+      'fill-outline-color': '#faf7f2'
+    }
+  }, firstLayerId);
+
+  // Ergänzende feine Grenzlinie für saubere Länderkonturen
+  map.addLayer({
+    id: 'europa-land-borders',
+    type: 'line',
+    source: 'europa-source',
+    paint: {
+      'line-color': '#faf7f2',
+      'line-width': 1
+    }
+  }, firstLayerId);
+}
 
 /**
  * Richtet die MapLibre-Vektor-Layer fuer die Routenanzeige ein

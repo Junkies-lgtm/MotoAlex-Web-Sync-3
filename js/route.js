@@ -6,9 +6,12 @@
 // Adresse des Kartenstils (eigener Kachelserver)
 const MAP_STYLE_URL = 'https://tiles.motoalex-navigation.de/assets/style-bright.json';
 
-// Begrenzung des Kartenausschnitts und Zoomlevels (aktuell Deutschland)
-const MAP_MIN_ZOOM = 5;
-const MAP_MAX_BOUNDS = [[5.5, 47.0], [15.5, 55.5]];
+// Begrenzung des Kartenausschnitts und Zoomlevels (Mitteleuropa / Nachbarländer)
+const MAP_MIN_ZOOM = 3;
+const MAP_MAX_BOUNDS = [[-5.0, 40.0], [25.0, 62.0]];
+
+// Pfad zur vereinfachten Europa-Hintergrundebene
+const EUROPA_GEOJSON_URL = 'data/europa.geojson';
 
 // Basisadresse des BRouter-Routendienstes (eigener Server)
 const ROUTING_SERVICE_URL = 'https://brouter.motoalex-navigation.de/brouter';
@@ -181,6 +184,56 @@ function renderWaypointList(waypoints, segmentModes = []) {
 }
 
 /**
+ * Richtet die schemenhafte Europa-Hintergrundebene als Fallback unter allen Vektorkacheln ein
+ */
+function setupEuropaBackgroundLayer(map) {
+  if (!map || map.getSource('europa-source')) return;
+
+  // Hintergrundfarbe der Karte (Meer/Wasser) auf einen hellen Blauton setzen
+  if (map.getLayer('background')) {
+    map.setPaintProperty('background', 'background-color', '#c8dcf0');
+  }
+
+  // Zusätzliche GeoJSON-Quelle mit vereinfachten europäischen Länderflächen
+  map.addSource('europa-source', {
+    type: 'geojson',
+    data: EUROPA_GEOJSON_URL
+  });
+
+  // Erste vorhandene Ebene nach 'background' ermitteln, um die Füllebene direkt darüber einzufügen
+  const layers = map.getStyle().layers || [];
+  let firstLayerId = null;
+  for (let i = 0; i < layers.length; i++) {
+    if (layers[i].type !== 'background') {
+      firstLayerId = layers[i].id;
+      break;
+    }
+  }
+
+  // Füllebene: Gedecktes Beige passend zum Hintergrund (#ece4da), mit feiner hellerer Grenzlinie
+  map.addLayer({
+    id: 'europa-land-fill',
+    type: 'fill',
+    source: 'europa-source',
+    paint: {
+      'fill-color': '#ece4da',
+      'fill-outline-color': '#faf7f2'
+    }
+  }, firstLayerId);
+
+  // Ergänzende feine Grenzlinie für saubere Länderkonturen
+  map.addLayer({
+    id: 'europa-land-borders',
+    type: 'line',
+    source: 'europa-source',
+    paint: {
+      'line-color': '#faf7f2',
+      'line-width': 1
+    }
+  }, firstLayerId);
+}
+
+/**
  * Initialisiert die MapLibre-Karte und zeichnet die Route
  */
 function renderRouteMap(waypoints, segmentModesOrMode) {
@@ -199,6 +252,9 @@ function renderRouteMap(waypoints, segmentModesOrMode) {
     mapInstance.addControl(new maplibregl.ScaleControl({ unit: 'metric' }), 'bottom-left');
 
     mapInstance.on('load', () => {
+      // Schemenhafte Europa-Ebene als Fallback unter allen Kacheln laden
+      setupEuropaBackgroundLayer(mapInstance);
+
       // 1. Bounds berechnen und Karte einpassen
       const bounds = new maplibregl.LngLatBounds();
       waypoints.forEach(wp => bounds.extend([wp.lng, wp.lat]));
