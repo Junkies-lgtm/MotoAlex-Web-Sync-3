@@ -52,7 +52,10 @@
         "url": "https://motoalex-navigation.de/",
         "name": "MotoAlex Navigation",
         "description": "Kostenlose Offline-Navigations-App für Motorradfahrer mit kurvenoptimiertem Routing ohne Abo.",
-        "inLanguage": "de-DE"
+        "inLanguage": "de-DE",
+        "sameAs": [
+          "https://www.instagram.com/MotoAlex_Navigation"
+        ]
       },
       {
         "@type": "MobileApplication",
@@ -64,6 +67,9 @@
         "applicationSubCategory": "Motorcycle Navigation",
         "description": "Kostenlose Offline-Navigations-App für Motorradfahrer mit kurvenoptimiertem Routing, Tempolimits und OpenStreetMap-Karten ohne Abo.",
         "image": "https://motoalex-navigation.de/bilder/og-banner.png",
+        "sameAs": [
+          "https://www.instagram.com/MotoAlex_Navigation"
+        ],
         "screenshot": [
           "https://motoalex-navigation.de/bilder/screenshot-navigation-hochformat.webp",
           "https://motoalex-navigation.de/bilder/screenshot-navigation-querformat.webp",
@@ -134,7 +140,7 @@
   </script>
   
   <!-- Zentrales Stylesheet (Relative Pfadangabe fuer GitHub Pages) -->
-  <link rel="stylesheet" href="css/style.css?v=1.07">
+  <link rel="stylesheet" href="css/style.css?v=1.08">
 
   <!-- ==========================================================================
        SCREENSHOT-BILDER DATENSTRUKTUR (Hinzufuegen / Entfernen von Bildern)
@@ -382,12 +388,22 @@
       <div>
         <strong>MotoAlex Navigation</strong> &ndash; Kostenlose Motorrad-Navigation
       </div>
-      <nav class="footer-nav" aria-label="Fussnavigation">
-        <a href="index.html">Start</a>
-        <a href="planer.html">Routenplaner</a>
-        <a href="datenschutz.html">Datenschutz</a>
-        <a href="impressum.html">Impressum</a>
-      </nav>
+      <div class="footer-actions-row">
+        <a href="https://www.instagram.com/MotoAlex_Navigation" target="_blank" rel="noopener noreferrer me" class="footer-social-link" title="MotoAlex Navigation auf Instagram folgen (@MotoAlex_Navigation)" aria-label="MotoAlex auf Instagram">
+          <svg class="social-icon" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+            <rect width="20" height="20" x="2" y="2" rx="5" ry="5"/>
+            <path d="M16 11.37A4 4 0 1 1 12.63 8 4 4 0 0 1 16 11.37z"/>
+            <line x1="17.5" x2="17.51" y1="6.5" y2="6.5"/>
+          </svg>
+          <span>Instagram: @MotoAlex_Navigation</span>
+        </a>
+        <nav class="footer-nav" aria-label="Fussnavigation">
+          <a href="index.html">Start</a>
+          <a href="planer.html">Routenplaner</a>
+          <a href="datenschutz.html">Datenschutz</a>
+          <a href="impressum.html">Impressum</a>
+        </nav>
+      </div>
     </div>
   </footer>
 

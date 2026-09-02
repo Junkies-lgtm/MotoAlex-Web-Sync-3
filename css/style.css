@@ -1929,8 +1929,17 @@ p {
   gap: 16px;
 }
 
+.footer-actions-row {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 20px;
+}
+
 .footer-nav {
   display: flex;
+  align-items: center;
+  flex-wrap: wrap;
   gap: 20px;
 }
 
@@ -1942,6 +1951,52 @@ p {
 
 .footer-nav a:hover {
   color: var(--accent);
+}
+
+.footer-social-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  color: var(--text-dim);
+  text-decoration: none;
+  font-size: 12px;
+  font-weight: 500;
+  padding: 5px 12px;
+  background-color: var(--surface-light);
+  border: 1px solid var(--border);
+  border-radius: 99px;
+  transition: all 0.2s ease;
+}
+
+.footer-social-link:hover {
+  color: #ffffff;
+  background-color: #202020;
+  border-color: #e1306c;
+  transform: translateY(-1px);
+}
+
+.footer-social-link svg {
+  color: #e1306c;
+  flex-shrink: 0;
+}
+
+.sidebar-instagram-link {
+  color: var(--text-dim);
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  text-decoration: none;
+  font-size: 11px;
+  transition: color 0.2s ease;
+}
+
+.sidebar-instagram-link:hover {
+  color: #e1306c;
+}
+
+.sidebar-instagram-link svg {
+  color: #e1306c;
+  flex-shrink: 0;
 }
 
 /* ==========================================================================
