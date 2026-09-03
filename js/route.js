@@ -189,18 +189,18 @@ function renderWaypointList(waypoints, segmentModes = []) {
 function setupEuropaBackgroundLayer(map) {
   if (!map || map.getSource('europa-source')) return;
 
-  // Hintergrundfarbe der Karte (Meer/Wasser) auf einen hellen Blauton setzen
+  // Hintergrundfarbe der Karte (Meer/Wasser) auf ein klares, sanftes Hellblau (#D8E8F8) setzen
   if (map.getLayer('background')) {
     map.setPaintProperty('background', 'background-color', '#D8E8F8');
   }
 
-  // Zusätzliche GeoJSON-Quelle mit vereinfachten europäischen Länderflächen
+  // Zusätzliche GeoJSON-Quelle mit europäischen Landmassen und separaten Staatsgrenzen
   map.addSource('europa-source', {
     type: 'geojson',
     data: EUROPA_GEOJSON_URL
   });
 
-  // Erste vorhandene Ebene nach 'background' ermitteln, um die Füllebene direkt darüber einzufügen
+  // Erste vorhandene Ebene nach 'background' ermitteln, um die Ebenen direkt darüber einzufügen
   const layers = map.getStyle().layers || [];
   let firstLayerId = null;
   for (let i = 0; i < layers.length; i++) {
@@ -210,27 +210,71 @@ function setupEuropaBackgroundLayer(map) {
     }
   }
 
-  // Füllebene: Landflächen farblich an die App anpassen (#F4F3F0)
+  // Falls der Vektorstil keinen Background-Layer hatte, Basisebene für Wasser einfügen
+  if (!map.getLayer('background') && !map.getLayer('europa-water-background')) {
+    map.addLayer({
+      id: 'europa-water-background',
+      type: 'background',
+      paint: {
+        'background-color': '#D8E8F8'
+      }
+    }, firstLayerId);
+  }
+
+  // 1. Füllebene: Land- und Küstenflächen (#FDFBF7 - noch hellerer, weißerer Hintergrund mit dezentem warmen Beige)
   map.addLayer({
     id: 'europa-land-fill',
     type: 'fill',
     source: 'europa-source',
+    filter: ['match', ['get', 'class'], ['land', 'coastline'], true, false],
     paint: {
-      'fill-color': '#F4F3F0',
-      'fill-outline-color': '#B0B8C0'
+      'fill-color': '#FDFBF7',
+      'fill-outline-color': '#FDFBF7',
+      'fill-antialias': true
     }
   }, firstLayerId);
 
-  // Ergänzende Grenzlinie für saubere Länderkonturen (#B0B8C0)
+  // 2. Linienebene: Binnengrenzen / Länderlinien (gestrichelt, weiches Schiefergrau #9DA8B3)
+  // Als separate Schicht gerendert – verhindert Doppel-Linien-Effekte zwischen Nachbarstaaten
   map.addLayer({
     id: 'europa-land-borders',
     type: 'line',
     source: 'europa-source',
+    filter: ['==', ['get', 'class'], 'boundary'],
+    layout: {
+      'line-join': 'round',
+      'line-cap': 'round'
+    },
     paint: {
-      'line-color': '#B0B8C0',
-      'line-width': 1
+      'line-color': '#9DA8B3',
+      'line-opacity': 0.7,
+      'line-width': 0.9,
+      'line-dasharray': [3, 2]
     }
   }, firstLayerId);
+
+  // Harmonisierung vorhandener Gewässer- und Grenzschichten im Vektorstil
+  // Wellenmuster und Kachel-Offsets deaktivieren für eine absolut ruhige, gleichmäßige Wasserfläche
+  if (map.getLayer('water-pattern')) {
+    map.setLayoutProperty('water-pattern', 'visibility', 'none');
+  }
+  if (map.getLayer('water-offset')) {
+    map.setLayoutProperty('water-offset', 'visibility', 'none');
+  }
+  if (map.getLayer('water')) {
+    map.setPaintProperty('water', 'fill-color', '#D8E8F8');
+  }
+  if (map.getLayer('water-intermittent')) {
+    map.setPaintProperty('water-intermittent', 'fill-color', '#D8E8F8');
+  }
+  if (map.getLayer('boundary-land-level-2')) {
+    map.setPaintProperty('boundary-land-level-2', 'line-color', '#9DA8B3');
+    map.setPaintProperty('boundary-land-level-2', 'line-opacity', 0.7);
+    map.setPaintProperty('boundary-land-level-2', 'line-dasharray', [3, 2]);
+  }
+  if (map.getLayer('boundary-water')) {
+    map.setLayoutProperty('boundary-water', 'visibility', 'none');
+  }
 }
 
 /**
@@ -245,7 +289,8 @@ function renderRouteMap(waypoints, segmentModesOrMode) {
       zoom: 10,
       minZoom: MAP_MIN_ZOOM,
       maxBounds: MAP_MAX_BOUNDS,
-      attributionControl: true
+      attributionControl: true,
+      antialias: true
     });
 
     mapInstance.addControl(new maplibregl.NavigationControl(), 'top-right');
