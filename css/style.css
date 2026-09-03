@@ -1528,20 +1528,26 @@ p {
 
 /* --- Status & Fehlermeldung mit Leuchtpunkt (Immersive UI Status) --- */
 .status-banner {
+  position: relative !important;
+  overflow: hidden !important;
   padding: 10px 14px;
   border-radius: var(--radius-sm);
   font-size: 13px;
   line-height: 1.4;
   display: none;
+  box-sizing: border-box;
 }
 
 .status-banner.is-loading {
+  position: relative !important;
+  overflow: hidden !important;
   display: flex;
   align-items: center;
   gap: 8px;
   background-color: var(--surface-light);
   border: 1px solid var(--accent);
   color: var(--text);
+  min-height: 42px;
 }
 
 .status-banner.is-loading::before {
@@ -1552,6 +1558,100 @@ p {
   border-radius: 50%;
   background-color: var(--accent);
   animation: pulse-dot 1.2s infinite ease-in-out;
+  flex-shrink: 0;
+}
+
+/* Wenn Fortschrittsanzeige aktiv ist:
+   - Kein Pseudoelement
+   - Absoluter Hintergrund-Balken (Underlay) verschiebt Text niemals
+   - Dezente, warme orange-bernsteinfarbene Füllung
+*/
+.status-banner.has-progress {
+  display: block !important;
+  position: relative !important;
+  overflow: hidden !important;
+  padding: 0 !important;
+  background-color: #1a1a1a !important;
+  border: 1px solid var(--accent) !important;
+  min-height: 42px !important;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.4) !important;
+}
+
+.status-banner.has-progress::before {
+  display: none !important;
+  content: none !important;
+}
+
+.status-progress-fill {
+  position: absolute !important;
+  top: 0 !important;
+  bottom: 0 !important;
+  left: 0 !important;
+  height: 100% !important;
+  width: 0%;
+  background: linear-gradient(90deg, rgba(255, 85, 0, 0.28) 0%, rgba(255, 115, 30, 0.42) 100%) !important;
+  border-right: 2px solid #ff7733 !important;
+  box-shadow: 2px 0 10px rgba(255, 85, 0, 0.45) !important;
+  pointer-events: none !important;
+  z-index: 1 !important;
+  transition: width 0.12s linear;
+}
+
+.status-banner-content {
+  position: relative !important;
+  z-index: 2 !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: space-between !important;
+  gap: 8px !important;
+  width: 100% !important;
+  height: 100% !important;
+  min-height: 40px !important;
+  padding: 10px 12px !important;
+  box-sizing: border-box !important;
+  white-space: nowrap !important;
+  pointer-events: none !important;
+}
+
+.status-banner-main {
+  display: flex !important;
+  align-items: center !important;
+  gap: 8px !important;
+  min-width: 0 !important;
+  flex: 1 1 auto !important;
+  overflow: hidden !important;
+}
+
+.status-banner-dot {
+  display: inline-block !important;
+  width: 8px !important;
+  height: 8px !important;
+  border-radius: 50% !important;
+  background-color: var(--accent) !important;
+  box-shadow: 0 0 6px var(--accent) !important;
+  animation: pulse-dot 1.2s infinite ease-in-out !important;
+  flex-shrink: 0 !important;
+}
+
+.status-banner-text {
+  color: #ffffff !important;
+  font-size: 13px !important;
+  font-weight: 600 !important;
+  white-space: nowrap !important;
+  text-overflow: ellipsis !important;
+  overflow: hidden !important;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.8) !important;
+}
+
+.status-banner-percent {
+  font-family: monospace !important;
+  font-weight: 700 !important;
+  color: #ffffff !important;
+  font-size: 13px !important;
+  flex-shrink: 0 !important;
+  text-align: right !important;
+  min-width: 38px !important;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.8) !important;
 }
 
 .status-banner.is-error {

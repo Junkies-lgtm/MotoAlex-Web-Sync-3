@@ -798,11 +798,9 @@ function onSearchResultSelected(lng, lat, name) {
     showStatus(`Startpunkt gesetzt: ${name}`, 'success');
   } else if (state.waypoints.length === 1) {
     addWaypointAsZiel(lng, lat);
-    showStatus(`Zielpunkt gesetzt: ${name}`, 'success');
   } else {
     // Als weiteres Zwischenziel/Ziel anfügen
     addWaypointAsZiel(lng, lat);
-    showStatus(`Wegpunkt hinzugefügt: ${name}`, 'success');
   }
 }
 
@@ -1023,7 +1021,9 @@ function removeWaypoint(index) {
   if (state.waypoints.length >= 2) {
     calculateRoute();
   } else {
+    cancelRunningCalculation();
     clearRouteLayer();
+    hideStatus();
   }
 }
 
@@ -1235,6 +1235,7 @@ function renderWaypointsList() {
  * Loescht alle Wegpunkte und die aktuelle Route
  */
 function clearAllWaypointsAndRoute() {
+  cancelRunningCalculation();
   closeContextMenu();
   state.waypoints.forEach(wp => wp.marker.remove());
   state.waypoints = [];
@@ -1429,15 +1430,357 @@ function buildBRouterUrl(waypoints, profileId, params = null) {
   return url;
 }
 
+// ==========================================================================
+// 6a. LERNENDE RESTZEIT-SCHÄTZUNG & BERECHNUNGS-STATISTIK
+// ==========================================================================
+
+const STATS_STORAGE_KEY = 'motoalex_calc_stats';
+const DEFAULT_GRUNDLAST = 5.0; // 5 Sekunden Startwert
+const DEFAULT_FAKTOR = 0.015;  // 0.015 Startwert
+
+// Standardwerte für Grundlast & Startfaktor je Modus
+const MODE_CALC_CONFIG = {
+  kurvig: { grundlast: 5.0, defaultFaktor: 0.015 },
+  schnell: { grundlast: 5.0, defaultFaktor: 0.015 },
+  schnellste: { grundlast: 5.0, defaultFaktor: 0.015 },
+  extra_kurvig: { grundlast: 5.0, defaultFaktor: 0.015 }
+};
+
+/**
+ * Berechnet die Großkreis-Luftliniendistanz zwischen zwei Koordinaten in Kilometern
+ */
+function getHaversineDistanceKm(coordA, coordB) {
+  const R = 6371; // Erdradius in km
+  const dLat = (coordB.lat - coordA.lat) * (Math.PI / 180);
+  const dLng = (coordB.lng - coordA.lng) * (Math.PI / 180);
+  const lat1 = coordA.lat * (Math.PI / 180);
+  const lat2 = coordB.lat * (Math.PI / 180);
+
+  const a = Math.sin(dLat / 2) * Math.sin(dLat / 2) +
+            Math.cos(lat1) * Math.cos(lat2) *
+            Math.sin(dLng / 2) * Math.sin(dLng / 2);
+  const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+  return R * c;
+}
+
+/**
+ * Berechnet die Summe aller Luftlinien der Segmente in Kilometern
+ */
+function calculateTotalAirDistanceKm(waypoints) {
+  let totalKm = 0;
+  for (let i = 0; i < waypoints.length - 1; i++) {
+    totalKm += getHaversineDistanceKm(waypoints[i], waypoints[i + 1]);
+  }
+  return totalKm;
+}
+
+/**
+ * Lädt die Berechnungsstatistiken aus dem localStorage
+ */
+function getCalcStats() {
+  try {
+    const raw = localStorage.getItem(STATS_STORAGE_KEY);
+    if (!raw) return {};
+    const parsed = JSON.parse(raw);
+    return (parsed && typeof parsed === 'object') ? parsed : {};
+  } catch (_) {
+    return {};
+  }
+}
+
+/**
+ * Speichert die Berechnungsstatistiken in den localStorage
+ */
+function saveCalcStats(stats) {
+  try {
+    localStorage.setItem(STATS_STORAGE_KEY, JSON.stringify(stats));
+  } catch (err) {
+    console.warn('Fehler beim Speichern von motoalex_calc_stats:', err);
+  }
+}
+
+/**
+ * Speichert je Modus die letzten 20 Messungen als Paare aus km und Sekunden.
+ * Messungen unter 300 ms sind Treffer im Servercache und werden nicht gespeichert.
+ */
+function recordCalculationMeasurement(mode, km, seconds) {
+  // Messungen unter 300 ms (Servercache) werden nicht gespeichert
+  if (!seconds || seconds * 1000 < 300) {
+    return;
+  }
+  if (!km || km <= 0 || seconds <= 0) {
+    return;
+  }
+
+  const modeKey = mode || 'kurvig';
+  const allStats = getCalcStats();
+  const list = Array.isArray(allStats[modeKey]) ? allStats[modeKey] : [];
+
+  list.push({
+    km: Math.round(km * 100) / 100,
+    s: Math.round(seconds * 1000) / 1000
+  });
+
+  // Nur die letzten 20 Messungen je Modus behalten
+  while (list.length > 20) {
+    list.shift();
+  }
+
+  allStats[modeKey] = list;
+  saveCalcStats(allStats);
+}
+
+/**
+ * Leitet den Faktor aus dem Median der Messungen ab (Dauer = Grundlast + Faktor * km^1.3)
+ */
+function getLearnedFactorForMode(mode) {
+  const modeKey = mode || 'kurvig';
+  const config = MODE_CALC_CONFIG[modeKey] || { grundlast: DEFAULT_GRUNDLAST, defaultFaktor: DEFAULT_FAKTOR };
+  const allStats = getCalcStats();
+  const list = allStats[modeKey];
+
+  if (!Array.isArray(list) || list.length === 0) {
+    return config.defaultFaktor;
+  }
+
+  const impliedFactors = [];
+  for (const item of list) {
+    let km = 0;
+    let s = 0;
+    if (typeof item === 'object' && item !== null) {
+      km = typeof item.km === 'number' ? item.km : (Array.isArray(item) ? item[0] : 0);
+      s = typeof item.s === 'number' ? item.s : (Array.isArray(item) ? item[1] : 0);
+    }
+    if (km > 0 && s > 0) {
+      const denom = Math.pow(km, 1.3);
+      if (denom > 0) {
+        const factor = (s - config.grundlast) / denom;
+        // Faktor immer positiv halten
+        impliedFactors.push(Math.max(0.001, factor));
+      }
+    }
+  }
+
+  if (impliedFactors.length === 0) {
+    return config.defaultFaktor;
+  }
+
+  // Median berechnen (nicht Mittelwert)
+  impliedFactors.sort((a, b) => a - b);
+  const mid = Math.floor(impliedFactors.length / 2);
+  const medianFactor = (impliedFactors.length % 2 !== 0)
+    ? impliedFactors[mid]
+    : (impliedFactors[mid - 1] + impliedFactors[mid]) / 2;
+
+  return medianFactor;
+}
+
+/**
+ * Liefert die Grundlast für einen Modus
+ */
+function getGrundlastForMode(mode) {
+  const modeKey = mode || 'kurvig';
+  return MODE_CALC_CONFIG[modeKey]?.grundlast ?? DEFAULT_GRUNDLAST;
+}
+
+/**
+ * Schätzung vor dem Start:
+ * Summe der Luftlinien aller Segmente in km, dann Dauer = Grundlast + Faktor * km^1.3
+ */
+function estimateRouteCalculationSeconds(waypoints, segmentModes, defaultMode = 'kurvig') {
+  if (!waypoints || waypoints.length < 2) return DEFAULT_GRUNDLAST;
+
+  const firstMode = segmentModes[0] || defaultMode;
+  const allSameMode = segmentModes.length === 0 || segmentModes.every(m => m === firstMode);
+
+  if (allSameMode) {
+    const totalAirKm = calculateTotalAirDistanceKm(waypoints);
+    const grundlast = getGrundlastForMode(firstMode);
+    const faktor = getLearnedFactorForMode(firstMode);
+    const duration = grundlast + faktor * Math.pow(totalAirKm, 1.3);
+    return {
+      durationSeconds: Math.max(1.0, duration),
+      totalAirKm,
+      isAllSameMode: true,
+      mode: firstMode
+    };
+  } else {
+    let totalEst = 0;
+    let totalAirKm = 0;
+    for (let i = 0; i < waypoints.length - 1; i++) {
+      const segMode = segmentModes[i] || defaultMode;
+      const segKm = getHaversineDistanceKm(waypoints[i], waypoints[i + 1]);
+      totalAirKm += segKm;
+      const grundlast = getGrundlastForMode(segMode);
+      const faktor = getLearnedFactorForMode(segMode);
+      totalEst += (grundlast + faktor * Math.pow(segKm, 1.3));
+    }
+    return {
+      durationSeconds: Math.max(1.0, totalEst),
+      totalAirKm,
+      isAllSameMode: false,
+      mode: firstMode
+    };
+  }
+}
+
+// ==========================================================================
+// 6b. NEBENLÄUFIGKEIT & RESTZEITANZEIGE (FORTSCHRITTS-PILLE)
+// ==========================================================================
+
+let currentCalculationId = 0;
+let currentCalculationAbortController = null;
+
+let isProgressActive = false;
+let progressStartTime = 0;
+let progressEstimatedDurationMs = 5000;
+let progressAnimFrame = null;
+let currentProgressPercent = 0;
+
+/**
+ * Startet oder aktualisiert die Fortschrittsanzeige in der Pille
+ * (ohne Flackern oder Ein-/Ausblenden bei laufender Berechnung)
+ */
+function startOrUpdateCalculationProgress(estimatedSeconds) {
+  const estimatedMs = Math.max(800, estimatedSeconds * 1000);
+  progressEstimatedDurationMs = estimatedMs;
+  progressStartTime = performance.now();
+
+  const banner = domElements.statusBanner;
+  if (!banner) return;
+
+  if (!isProgressActive) {
+    isProgressActive = true;
+    currentProgressPercent = 0;
+    banner.className = 'status-banner is-loading has-progress';
+    banner.style.display = 'block';
+    banner.style.padding = '0';
+    banner.style.position = 'relative';
+    banner.style.overflow = 'hidden';
+    banner.style.backgroundColor = '#1a1a1a';
+    banner.innerHTML = `
+      <div class="status-progress-fill" id="status-progress-fill" style="position: absolute; top: 0; bottom: 0; left: 0; height: 100%; width: 0%; background: linear-gradient(90deg, rgba(255, 85, 0, 0.28) 0%, rgba(255, 115, 30, 0.42) 100%); border-right: 2px solid #ff7733; box-shadow: 2px 0 10px rgba(255, 85, 0, 0.45); pointer-events: none; z-index: 1; transition: width 0.12s linear;"></div>
+      <div class="status-banner-content" style="position: relative; z-index: 2; display: flex; align-items: center; justify-content: space-between; gap: 8px; width: 100%; height: 100%; min-height: 40px; padding: 10px 12px; box-sizing: border-box; white-space: nowrap; pointer-events: none;">
+        <div class="status-banner-main" style="display: flex; align-items: center; gap: 8px; min-width: 0; flex: 1 1 auto; overflow: hidden;">
+          <span class="status-banner-dot" style="display: inline-block; width: 8px; height: 8px; border-radius: 50%; background-color: #ff5500; box-shadow: 0 0 6px #ff5500; flex-shrink: 0;"></span>
+          <span class="status-banner-text" style="color: #ffffff; font-size: 13px; font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; text-shadow: 0 1px 2px rgba(0,0,0,0.8);">Berechne optimale Route</span>
+        </div>
+        <span class="status-banner-percent" id="status-banner-percent" style="font-family: monospace; font-weight: 700; color: #ffffff; font-size: 13px; flex-shrink: 0; text-align: right; min-width: 38px; text-shadow: 0 1px 2px rgba(0,0,0,0.8);">0%</span>
+      </div>
+    `;
+  } else {
+    // Bei einer neuen Berechnung während einer laufenden bleibt die Anzeige sichtbar
+    // und wird nur mit der neuen Schätzung neu befüllt, kein Aus- und Einblenden, kein Flackern.
+    currentProgressPercent = 0;
+    updateProgressUI(0);
+  }
+
+  if (progressAnimFrame) {
+    cancelAnimationFrame(progressAnimFrame);
+    progressAnimFrame = null;
+  }
+
+  function tick() {
+    if (!isProgressActive) return;
+
+    const elapsed = performance.now() - progressStartTime;
+    // Fortschrittsberechnung bis max. 95%
+    // Läuft die Zeit über die Schätzung, bleibt die Linie bei 95 Prozent stehen.
+    const ratio = Math.min(1.0, elapsed / progressEstimatedDurationMs);
+    const targetPercent = Math.min(95, Math.floor(ratio * 95));
+
+    currentProgressPercent = targetPercent;
+    updateProgressUI(currentProgressPercent);
+
+    if (elapsed < progressEstimatedDurationMs) {
+      progressAnimFrame = requestAnimationFrame(tick);
+    } else {
+      currentProgressPercent = 95;
+      updateProgressUI(95);
+    }
+  }
+
+  progressAnimFrame = requestAnimationFrame(tick);
+}
+
+/**
+ * Aktualisiert die visuelle Füllung und den Prozenttext
+ */
+function updateProgressUI(percent) {
+  const fillEl = document.getElementById('status-progress-fill');
+  const percentEl = document.getElementById('status-banner-percent');
+  if (fillEl) fillEl.style.width = `${percent}%`;
+  if (percentEl) percentEl.textContent = `${percent}%`;
+}
+
+/**
+ * Schließt die Berechnung mit 100% ab und blendet die Pille nach kurzem Moment aus
+ */
+function finishCalculationProgress(onComplete) {
+  if (!isProgressActive) {
+    if (onComplete) onComplete();
+    return;
+  }
+
+  if (progressAnimFrame) {
+    cancelAnimationFrame(progressAnimFrame);
+    progressAnimFrame = null;
+  }
+
+  updateProgressUI(100);
+
+  setTimeout(() => {
+    stopCalculationProgress();
+    if (onComplete) onComplete();
+  }, 220);
+}
+
+/**
+ * Beendet die Fortschrittsanzeige sofort
+ */
+function stopCalculationProgress() {
+  if (progressAnimFrame) {
+    cancelAnimationFrame(progressAnimFrame);
+    progressAnimFrame = null;
+  }
+  isProgressActive = false;
+  currentProgressPercent = 0;
+  const banner = domElements.statusBanner;
+  if (banner && banner.classList.contains('has-progress')) {
+    banner.style.display = 'none';
+    banner.style.padding = '';
+    banner.style.backgroundColor = '';
+    banner.style.position = '';
+    banner.style.overflow = '';
+    banner.className = 'status-banner';
+    banner.innerHTML = '';
+  }
+}
+
+/**
+ * Bricht eine laufende Routenberechnung und deren AbortController ab
+ */
+function cancelRunningCalculation() {
+  if (currentCalculationAbortController) {
+    try {
+      currentCalculationAbortController.abort();
+    } catch (_) {}
+    currentCalculationAbortController = null;
+  }
+  currentCalculationId++;
+  stopCalculationProgress();
+  state.isLoading = false;
+}
+
 /**
  * Fuehrt die Berechnung eines einzelnen Segments (von Punkt A nach Punkt B) durch.
  */
-async function fetchSegmentRoute(wpA, wpB, modeKey) {
+async function fetchSegmentRoute(wpA, wpB, modeKey, signal = null) {
   const modeParams = MODE_PARAMETERS[modeKey] || MODE_PARAMETERS.kurvig;
   const segmentPoints = [wpA, wpB];
 
   const url = buildBRouterUrl(segmentPoints, PROFILE_ID, modeParams);
-  const response = await fetch(url);
+  const response = await fetch(url, { signal });
   if (!response.ok) throw new Error(`HTTP ${response.status}`);
   const data = await response.json();
   if (!data.features || data.features.length === 0) {
@@ -1448,45 +1791,94 @@ async function fetchSegmentRoute(wpA, wpB, modeKey) {
 
 /**
  * Fuehrt die Routenberechnung ueber den BRouter-Dienst durch.
- * Unterstuetzt abschnittsweise Profile (Segment-Routing) oder Gesamtanfrage.
+ * Mit Nebenläufigkeitskontrolle (AbortController & fortlaufende ID),
+ * Messung (performance.now), Schätzung und lernender Restzeitanzeige.
  */
 async function calculateRoute() {
   if (state.waypoints.length < 2) {
+    cancelRunningCalculation();
     showStatus('Bitte setze mindestens 2 Punkte auf der Karte (Start und Ziel).', 'error');
     return;
   }
 
   syncSegmentModes();
-  showStatus('Berechne optimale Motorradroute...', 'loading');
+
+  // 1. Schätzung vor dem Start (Summe Luftlinien, Grundlast + Faktor * km^1.3)
+  const estimation = estimateRouteCalculationSeconds(state.waypoints, state.segmentModes, state.selectedMode);
+
+  // 2. Nebenläufigkeit zuerst:
+  // Beim Start einer neuen Berechnung wird die vorherige Anfrage per AbortController abgebrochen.
+  if (currentCalculationAbortController) {
+    try {
+      currentCalculationAbortController.abort();
+    } catch (_) {}
+  }
+  currentCalculationAbortController = new AbortController();
+  const abortSignal = currentCalculationAbortController.signal;
+
+  // Fortlaufende Nummer für diesen Durchlauf
+  const thisCalculationId = ++currentCalculationId;
+
+  // 3. Fortschrittsanzeige starten oder nahtlos anpassen
   state.isLoading = true;
+  startOrUpdateCalculationProgress(estimation.durationSeconds);
 
   try {
-    // Prüfen, ob alle Segmente denselben Modus haben
     const firstMode = state.segmentModes[0] || state.selectedMode || 'kurvig';
     const allSameMode = state.segmentModes.every(m => m === firstMode);
 
     let combinedGeoJSON = null;
 
     if (allSameMode) {
-      // Schneller Gesamt-Abruf für alle Wegpunkte
       const modeParams = MODE_PARAMETERS[firstMode] || MODE_PARAMETERS.kurvig;
       const url = buildBRouterUrl(state.waypoints, PROFILE_ID, modeParams);
-      const response = await fetch(url);
+
+      // Dauer der BRouter-Anfrage mit performance.now() vor und nach dem fetch messen
+      const t0 = performance.now();
+      const response = await fetch(url, { signal: abortSignal });
+      const t1 = performance.now();
+
+      // Antworten mit einer älteren Nummer als der aktuellen verwerfen
+      if (thisCalculationId !== currentCalculationId) return;
+
       if (!response.ok) throw new Error(`HTTP ${response.status}`);
       const data = await response.json();
+      if (thisCalculationId !== currentCalculationId) return;
       if (!data.features || data.features.length === 0) throw new Error('Keine Route gefunden');
+
       combinedGeoJSON = data;
+
+      // Dauer erfassen und lernen (Treffer unter 300 ms sind Servercache und werden ignoriert)
+      const durationMs = t1 - t0;
+      const durationSeconds = durationMs / 1000;
+      if (durationMs >= 300) {
+        recordCalculationMeasurement(firstMode, estimation.totalAirKm, durationSeconds);
+      }
     } else {
-      // Unterschiedliche Profile pro Segment: Segmente einzeln abrufen und zusammenfügen
+      // Unterschiedliche Profile pro Segment: Segmente einzeln abrufen
       const segmentResults = [];
       for (let i = 0; i < state.waypoints.length - 1; i++) {
         const wpA = state.waypoints[i];
         const wpB = state.waypoints[i + 1];
         const segMode = state.segmentModes[i] || state.selectedMode || 'kurvig';
+        const segAirKm = getHaversineDistanceKm(wpA, wpB);
 
-        const segData = await fetchSegmentRoute(wpA, wpB, segMode);
+        const t0 = performance.now();
+        const segData = await fetchSegmentRoute(wpA, wpB, segMode, abortSignal);
+        const t1 = performance.now();
+
+        if (thisCalculationId !== currentCalculationId) return;
+
+        const segDurationMs = t1 - t0;
+        const segDurationSeconds = segDurationMs / 1000;
+        if (segDurationMs >= 300) {
+          recordCalculationMeasurement(segMode, segAirKm, segDurationSeconds);
+        }
+
         segmentResults.push(segData);
       }
+
+      if (thisCalculationId !== currentCalculationId) return;
 
       // GeoJSON Geometrie und Eigenschaften kombinieren
       const allCoordinates = [];
@@ -1499,7 +1891,6 @@ async function calculateRoute() {
         if (idx === 0) {
           allCoordinates.push(...coords);
         } else {
-          // Den ersten Punkt des Segments auslassen, da er identisch mit dem letzten des vorherigen ist
           allCoordinates.push(...coords.slice(1));
         }
 
@@ -1526,12 +1917,13 @@ async function calculateRoute() {
       };
     }
 
-    // Erfolgreiche Route verarbeiten
+    if (thisCalculationId !== currentCalculationId) return;
+
+    // Erfolgreiche Route verarbeiten & auf der Karte zeichnen
     state.currentRouteGeoJSON = combinedGeoJSON;
     const routeFeature = combinedGeoJSON.features[0];
     state.currentRouteProperties = routeFeature.properties || {};
 
-    // Route auf der Karte zeichnen
     if (map.getSource('route-source')) {
       map.getSource('route-source').setData(combinedGeoJSON);
     } else {
@@ -1539,19 +1931,28 @@ async function calculateRoute() {
       map.getSource('route-source').setData(combinedGeoJSON);
     }
 
-    // Kartenausschnitt auf die Route anpassen
     fitMapToRoute(routeFeature.geometry.coordinates);
-
-    // Zusammenfassung (Distanz und Zeit) anzeigen
     displayRouteSummary(state.currentRouteProperties);
 
-    hideStatus();
+    // Fortschritt auf 100% abschließen und dann schließen
+    finishCalculationProgress(() => {
+      if (thisCalculationId === currentCalculationId) {
+        hideStatus();
+      }
+    });
   } catch (err) {
+    if (err.name === 'AbortError' || thisCalculationId !== currentCalculationId) {
+      // Still verwerfen bei neu gestarteter Berechnung
+      return;
+    }
     console.error('Fehler bei der Routenberechnung:', err);
+    stopCalculationProgress();
     showStatus(`Routenberechnung fehlgeschlagen: ${err.message || 'Dienst nicht erreichbar'}.`, 'error');
     clearRouteLayer();
   } finally {
-    state.isLoading = false;
+    if (thisCalculationId === currentCalculationId) {
+      state.isLoading = false;
+    }
   }
 }
 
@@ -1679,6 +2080,20 @@ function downloadGpxFile() {
 
 function showStatus(message, type = 'loading') {
   if (!domElements.statusBanner) return;
+
+  // Wenn Fortschrittsanzeige aktiv ist, Info/Erfolgsmeldungen nicht drüberblenden
+  if (isProgressActive && type !== 'error') {
+    return;
+  }
+
+  if (isProgressActive) {
+    stopCalculationProgress();
+  }
+
+  domElements.statusBanner.style.padding = '';
+  domElements.statusBanner.style.backgroundColor = '';
+  domElements.statusBanner.style.position = '';
+  domElements.statusBanner.style.overflow = '';
   domElements.statusBanner.textContent = message;
   domElements.statusBanner.style.display = 'flex';
   domElements.statusBanner.className = `status-banner is-${type}`;
@@ -1686,8 +2101,14 @@ function showStatus(message, type = 'loading') {
 
 function hideStatus() {
   if (!domElements.statusBanner) return;
+  stopCalculationProgress();
   domElements.statusBanner.style.display = 'none';
+  domElements.statusBanner.style.padding = '';
+  domElements.statusBanner.style.backgroundColor = '';
+  domElements.statusBanner.style.position = '';
+  domElements.statusBanner.style.overflow = '';
   domElements.statusBanner.className = 'status-banner';
+  domElements.statusBanner.textContent = '';
 }
 
 // ==========================================================================
