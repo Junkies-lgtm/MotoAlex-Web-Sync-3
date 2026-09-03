@@ -191,7 +191,7 @@ function setupEuropaBackgroundLayer(map) {
 
   // Hintergrundfarbe der Karte (Meer/Wasser) auf einen hellen Blauton setzen
   if (map.getLayer('background')) {
-    map.setPaintProperty('background', 'background-color', '#c8dcf0');
+    map.setPaintProperty('background', 'background-color', '#D8E8F8');
   }
 
   // Zusätzliche GeoJSON-Quelle mit vereinfachten europäischen Länderflächen
@@ -210,24 +210,24 @@ function setupEuropaBackgroundLayer(map) {
     }
   }
 
-  // Füllebene: Gedecktes Beige passend zum Hintergrund (#ece4da), mit feiner hellerer Grenzlinie
+  // Füllebene: Landflächen farblich an die App anpassen (#F4F3F0)
   map.addLayer({
     id: 'europa-land-fill',
     type: 'fill',
     source: 'europa-source',
     paint: {
-      'fill-color': '#ece4da',
-      'fill-outline-color': '#faf7f2'
+      'fill-color': '#F4F3F0',
+      'fill-outline-color': '#B0B8C0'
     }
   }, firstLayerId);
 
-  // Ergänzende feine Grenzlinie für saubere Länderkonturen
+  // Ergänzende Grenzlinie für saubere Länderkonturen (#B0B8C0)
   map.addLayer({
     id: 'europa-land-borders',
     type: 'line',
     source: 'europa-source',
     paint: {
-      'line-color': '#faf7f2',
+      'line-color': '#B0B8C0',
       'line-width': 1
     }
   }, firstLayerId);
